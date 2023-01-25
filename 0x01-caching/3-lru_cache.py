@@ -1,90 +1,86 @@
-#!/usr/bin/python3
-"""
-    BaseCache module
-"""
-
-from base_caching import BaseCaching
+#!/usr/bin/env python3
+"""Basic Caching"""
+BaseCaching = __import__('base_caching').BaseCaching
 
 
 class LRUCache(BaseCaching):
-    """ LRUCache define a LRU algorithm to use cache
-
-      To use:
-      >>> my_cache = BasicCache()
-      >>> my_cache.print_cache()
-      Current cache:
-
-      >>> my_cache.put("A", "Hello")
-      >>> my_cache.print_cache()
-      A: Hello
-
-      Ex:
-      >>> my_cache.print_cache()
-      Current cache:
-      A: Hello
-      B: World
-      C: Holberton
-      D: School
-      >>> print(my_cache.get("B"))
-      World
-      >>> my_cache.put("E", "Battery")
-      DISCARD: A
-      >>> my_cache.print_cache()
-      Current cache:
-      B: World
-      C: Holberton
-      D: School
-      E: Battery
     """
+    ----------------
+    CLASS: LRUCache
+    ----------------
+    """
+    usage_count = {}
 
     def __init__(self):
-        """ Initiliaze
+        """
+        ----------------------
+        MAGIC METHOD: __init__
+        ----------------------
+        Description:
+            Initializes the current
+            class object
         """
         super().__init__()
-        self.leastrecent = []
+        self.usage_count = {}
 
     def put(self, key, item):
         """
-            modify cache data
-
-            Args:
-                key: of the dict
-                item: value of the key
+        -----------
+        METHOD: put
+        -----------
+        Description:
+            Adds to caching dictionary an item
+            provided a key
+        Args:
+            @key: key to add to the cache
+            @item: value to add to the cache
         """
-        if key or item is not None:
-            valuecache = self.get(key)
-            # Make a new
-            if valuecache is None:
-                if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                    keydel = self.leastrecent
-                    lendel = len(keydel) - 1
-                    del self.cache_data[keydel[lendel]]
-                    print("DISCARD: {}".format(self.leastrecent.pop()))
-            else:
-                del self.cache_data[key]
+        if not key or not item:
+            return
 
-            if key in self.leastrecent:
-                self.leastrecent.remove(key)
-                self.leastrecent.insert(0, key)
-            else:
-                self.leastrecent.insert(0, key)
+        """
+        --------
+        BEHAVIOR
+        --------
+        Look for page faults
+        - Page faults occur when the item is not in
+        the dictionary
 
-            self.cache_data[key] = item
+        - If the item was in the dictionary, then
+        update the item and reset the element usage count
+        back to zero.
+
+        While incrementing the rest of the elements by one
+
+        - If self.cache has more than 4 elements
+        - Remove the item with the highest count
+        """
+        self.cache_data[key] = item
+        self.usage_count[key] = 0
+
+        if key in self.cache_data:
+            for k, v in self.usage_count.items():
+                if k != key:
+                    self.usage_count[k] += 1
+
+        if len(self.cache_data) > BaseCaching.MAX_ITEMS:
+            LRU_key = max(self.usage_count, key=self.usage_count.get)
+            print('DISCARD:', LRU_key)
+            del self.cache_data[LRU_key]
+            del self.usage_count[LRU_key]
 
     def get(self, key):
         """
-            modify cache data
-
-            Args:
-                key: of the dict
-
-            Return:
-                value of the key
+        -----------
+        METHOD: get
+        -----------
+        Description:
+            Given a key, returns the element
+            from cache_data if the key exists
+            in the cache_data dictionary.
+        Args:
+            @key: key to look for in cache
         """
-        valuecache = self.cache_data.get(key)
-
-        if valuecache:
-            self.leastrecent.remove(key)
-            self.leastrecent.insert(0, key)
-
-        return valuecache
+        if not key or key not in self.cache_data:
+            return None
+        return self.cache_data[key]
